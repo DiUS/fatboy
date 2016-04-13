@@ -19,17 +19,14 @@ Once you have a fatboy instance, configuring it is simple
 
 ### Custom factories
 
-* To add a factory for a specific field within a class
-
+To add a factory for a specific field within a class
 
     // add a factory for the 'fieldName' field
     fatBoy.addFieldFactory(MyClass.getDeclaredField("fieldName"), () -> new WhateverTheFieldClassIs("values here"))
     // add a constant value for the 'fieldName' field
     fatBoy.addFieldConstant(MyClass.class, "fieldName", new WhateverTheFieldClassIs("values here"))
 
-
-* Class factories are added similarly. A class factory can be a generic class factory, a simple one or a constant value
-
+Class factories are added similarly. A class factory can be a generic class factory, a simple one or a constant value
 
     // add a fully implemented class factory, make sure it implements GenericClassFactory if you intend to have it handle generic types
     fatBoy.addClassFactory(new MyClassFactoryInstance())
@@ -43,8 +40,8 @@ Once you have a fatboy instance, configuring it is simple
     // Make all instances of MyClass have a constant value
     fatBoy.addClassConstant(new MyClass())
 
-* FatBoy provided factories are a utility factory used when you want to create a class your way, but want some values created by fatboy
 
+FatBoy provided factories are a utility factory used when you want to create a class your way, but want some values created by fatboy
 
     fatBoy.addFatBoyProvidedFactory(MyClass.class, (fatBoy) -> new MyClass("Value 1", "Value 2", fatBoy.create(MyOtherClass.class))
 
