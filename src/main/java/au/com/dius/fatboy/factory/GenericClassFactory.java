@@ -11,7 +11,7 @@ public interface GenericClassFactory<T> extends ClassFactory<T> {
      *
      * @param clazz       The class to create
      * @param genericType The generic type of the declared class, which has 3 possible value types:
-     * @return true if this provider can create an instance (or generic instance) of the class in question, or false otherwise
+     * @return {@code true} if this provider can create an instance (or generic instance) of the class in question, or {@code false} otherwise
      */
     boolean supports(Class clazz, Type genericType);
 
@@ -21,6 +21,7 @@ public interface GenericClassFactory<T> extends ClassFactory<T> {
      *
      * @param rawType             The raw class of the type being created. (Map, List, Set etc)
      * @param actualTypeArguments the declared generic types for the class being created
+     * @return A new object of class type {@code T} that this class is a factory for
      * @see au.com.dius.fatboy.factory.collections.CollectionFactory
      */
     T create(Class rawType, Type[] actualTypeArguments);
