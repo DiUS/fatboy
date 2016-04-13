@@ -7,6 +7,31 @@
     <artifactId>fatboy</artifactId>
     <version>0.0.1</version>
     <modelVersion>4.0.0</modelVersion>
+    <packaging>jar</packaging>
+
+    <name>FatBoy</name>
+    <description>Library for creating fixture data with 0 or some configuration</description>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>matt</name>
+            <email>mfielding@dius.com.au</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/DiUS/fatboy.git</connection>
+        <developerConnection>scm:git:git@github.com:DiUS/fatboy.git</developerConnection>
+        <url>git://github.com/DiUS/fatboy.git</url>
+    </scm>
 
     <dependencies>
         <dependency>
@@ -42,10 +67,21 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.1</version>
                 <configuration>
-                    <compilerId>groovy-eclipse-compiler</compilerId>
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
