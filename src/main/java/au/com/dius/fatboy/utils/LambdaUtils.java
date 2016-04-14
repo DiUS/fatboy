@@ -13,16 +13,6 @@ public class LambdaUtils {
         };
     }
 
-    public static <T> Consumer uncheck(UncheckedVoid delegate) {
-        return (incoming) -> {
-            try {
-                delegate.call();
-            } catch (Exception e) {
-                throw (RuntimeException) e;
-            }
-        };
-    }
-
     public static <T> T unchecked(UncheckedSupplier<T> t) {
         try {
             return t.call();
@@ -34,11 +24,6 @@ public class LambdaUtils {
     @FunctionalInterface
     public static interface UncheckedConsumer<T> {
         void call(T t) throws Exception;
-    }
-
-    @FunctionalInterface
-    public static interface UncheckedVoid {
-        void call() throws Exception;
     }
 
     @FunctionalInterface

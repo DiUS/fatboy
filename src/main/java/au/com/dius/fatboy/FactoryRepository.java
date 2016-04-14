@@ -50,14 +50,14 @@ class FactoryRepository {
     }
 
     public <T> void addFactory(Class<T> clazz, GenericTypeFactory<T> factory) {
-        if (clazz.getGenericInterfaces().length == 0) {
+        if (clazz.getTypeParameters().length == 0) {
             throw new IllegalArgumentException("Addition of a generic class factory must only be used for generic classes");
         }
         addFactory(new SimpleClassFactory<>(clazz, factory));
     }
 
     public <T extends ClassFactory> ClassFactory findFactory(Class<T> clazz) {
-        return factories.stream().filter(x -> x.getClass().isAssignableFrom(clazz)).findFirst().orElse(null);
+        return getFactory(x -> x.getClass().isAssignableFrom(clazz));
     }
 
     public <T> ClassFactory<T> getFactoryForClass(Class<T> clazz) {

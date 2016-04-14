@@ -32,12 +32,12 @@ public class FatBoy {
         factoryRepository = new FactoryRepository(this);
     }
 
-    public <T> FatBoy addClassFactory(ClassFactory<T> factory) {
+    public <T> FatBoy registerClassFactory(ClassFactory<T> factory) {
         factoryRepository.addFactory(factory);
         return this;
     }
 
-    public <T> FatBoy addClassFactory(Class<T> clazz, Supplier<T> supplier) {
+    public <T> FatBoy registerClassFactory(Class<T> clazz, Supplier<T> supplier) {
         factoryRepository.addFactory(clazz, supplier);
         return this;
     }
@@ -47,7 +47,7 @@ public class FatBoy {
         return this;
     }
 
-    public <T> FatBoy addGenericClassFactory(Class<T> clazz, GenericTypeFactory<T> factory) {
+    public <T> FatBoy registerGenericClassFactory(Class<T> clazz, GenericTypeFactory<T> factory) {
         factoryRepository.addFactory(clazz, factory);
         return this;
     }
@@ -57,19 +57,19 @@ public class FatBoy {
     }
 
     public <T> FatBoy addFieldConstant(Field field, T value) {
-        return addFieldFactory(field, () -> value);
+        return registerFieldFactory(field, () -> value);
     }
 
-    public <T> FatBoy addFieldFactory(Class clazz, String field, Supplier<T> factory) {
-        return addFieldFactory(ReflectionUtils.getField(clazz, field), factory);
+    public <T> FatBoy registerFieldFactory(Class clazz, String field, Supplier<T> factory) {
+        return registerFieldFactory(ReflectionUtils.getField(clazz, field), factory);
     }
 
-    public <T> FatBoy addFieldFactory(Field field, Supplier<T> factory) {
+    public <T> FatBoy registerFieldFactory(Field field, Supplier<T> factory) {
         factoryRepository.addFactory(field, factory);
         return this;
     }
 
-    public <T> FatBoy addFatBoyProvidedFactory(Class<T> clazz, FatBoyProvidedFactory<T> factory) {
+    public <T> FatBoy registerFatBoyProvidedFactory(Class<T> clazz, FatBoyProvidedFactory<T> factory) {
         factoryRepository.addFactory(clazz, () -> factory.create(this));
         return this;
     }
@@ -145,7 +145,13 @@ public class FatBoy {
     private <T> T createInstance(Constructor<T> constructor, Map<String, Object> overrides)
             throws InstantiationException, IllegalAccessException, InvocationTargetException {
 
-        List<Object> args = Arrays.asList(constructor.getParameterTypes()).stream().map(this::create).collect(Collectors.toList());
+        List<Object> args = Arrays.asList(constructor.getGenericParameterTypes()).stream().map(x -> {
+            if (x instanceof Class) {
+                return create((Class)x);
+            } else {
+                return createGeneric(x);
+            }
+        }).collect(Collectors.toList());
 
         T instance = constructor.newInstance(args.toArray());
 

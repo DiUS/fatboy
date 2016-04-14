@@ -61,7 +61,7 @@ public class FatBoyTest {
 
     @Test
     public void allowsPluginOfProviderTypes() {
-        ListClass result = fatBoy.addClassFactory(List.class, () -> Arrays.asList("hello")).create(ListClass.class);
+        ListClass result = fatBoy.registerClassFactory(List.class, () -> Arrays.asList("hello")).create(ListClass.class);
 
         assertThat(result.strings, is(Lists.newArrayList("hello")));
     }
@@ -125,7 +125,7 @@ public class FatBoyTest {
     @Test
     public void appliesFieldFactories() {
         CompositeClass create = fatBoy
-                .addFieldFactory(PrimitiveClass.class, "four", () -> "Stuff")
+                .registerFieldFactory(PrimitiveClass.class, "four", () -> "Stuff")
                 .create(CompositeClass.class);
 
         assertThat(create.primitives.get(0).four, is("Stuff"));
@@ -134,7 +134,7 @@ public class FatBoyTest {
     @Test
     public void appliesFieldFactoriesNumber2() throws Exception {
         CompositeClass create = fatBoy
-                .addFieldFactory(PrimitiveClass.class.getDeclaredField("four"), () -> "Stuff")
+                .registerFieldFactory(PrimitiveClass.class.getDeclaredField("four"), () -> "Stuff")
                 .create(CompositeClass.class);
 
         assertThat(create.primitives.get(0).four, is("Stuff"));
@@ -155,7 +155,7 @@ public class FatBoyTest {
         UUID uuid = UUID.randomUUID();
 
         ConstructorTestClass create = fatBoy
-                .addFatBoyProvidedFactory(ConstructorTestClass.class, (fatBoy) -> new ConstructorTestClass(uuid))
+                .registerFatBoyProvidedFactory(ConstructorTestClass.class, (fatBoy) -> new ConstructorTestClass(uuid))
                 .create(ConstructorTestClass.class, map("reference", override));
 
         assertThat(create.reference, is(uuid));
@@ -174,7 +174,7 @@ public class FatBoyTest {
     public void customClassProvidersCanBePluggedIn() {
         PrimitiveClass expected = new PrimitiveClass();
 
-        PrimitiveClass primitiveClass = fatBoy.addClassFactory(new PrimitiveProvider(expected)).create(PrimitiveClass.class);
+        PrimitiveClass primitiveClass = fatBoy.registerClassFactory(new PrimitiveProvider(expected)).create(PrimitiveClass.class);
 
         assertThat(primitiveClass, is(expected));
     }
@@ -183,7 +183,7 @@ public class FatBoyTest {
     public void customGenericClassFactoriesCanBePluggedIn() {
         List<String> expected = Lists.newArrayList("foosauce");
 
-        GenericListClass genericListClass = fatBoy.addGenericClassFactory(List.class, (a, b) -> expected)
+        GenericListClass genericListClass = fatBoy.registerGenericClassFactory(List.class, (a, b) -> expected)
                 .create(GenericListClass.class);
 
         assertThat(genericListClass.strings, is(expected));
@@ -191,7 +191,20 @@ public class FatBoyTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void explodesWhenGenericClassFactoryAddedForNonGenericClass() {
-        fatBoy.addGenericClassFactory(PrimitiveClass.class, (a, b) -> null).create(PrimitiveClass.class);
+        fatBoy.registerGenericClassFactory(PrimitiveClass.class, (a, b) -> null).create(PrimitiveClass.class);
+    }
+
+    @Test
+    public void shouldApplyGenericClassProviders() {
+        GenericClassContainer genericClassContainer = fatBoy
+                .registerGenericClassFactory(GenericClass.class, (raw, actual) -> {
+                    GenericClass genericClass = new GenericClass();
+                    genericClass.genericType = fatBoy.createGeneric(actual[0]);
+                    return genericClass;
+                })
+                .create(GenericClassContainer.class);
+
+        assertThat(genericClassContainer.myFoo.genericType, is(notNullValue()));
     }
 
     private static class PrimitiveClass {
@@ -258,6 +271,18 @@ public class FatBoyTest {
         @Override
         public PrimitiveClass create(Field field) {
             return toBeReturned;
+        }
+    }
+
+    private static class GenericClass<T> {
+        public T genericType;
+    }
+
+    public static class GenericClassContainer {
+        private GenericClass<String> myFoo;
+
+        public GenericClassContainer(GenericClass<String> myFoo) {
+            this.myFoo = myFoo;
         }
     }
 
