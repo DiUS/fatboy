@@ -7,9 +7,13 @@ import au.com.dius.fatboy.factory.config.FactoryConfig;
 import au.com.dius.fatboy.utils.ReflectionUtils;
 import com.github.javafaker.Faker;
 import com.google.common.collect.Maps;
+import com.google.common.reflect.TypeResolver;
 
 import java.lang.ref.SoftReference;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,21 +46,26 @@ public class FatBoy {
         return this;
     }
 
-    public <T> FatBoy addClassConstant(T value) {
+    public <T> FatBoy setClassConstant(T value) {
         factoryRepository.addFactory((Class<T>) value.getClass(), () -> value);
         return this;
     }
 
-    public <T> FatBoy registerGenericClassFactory(Class<T> clazz, GenericTypeFactory<T> factory) {
+    public <T> FatBoy registerGenericFactory(Class<T> clazz, GenericTypeFactory<T> factory) {
         factoryRepository.addFactory(clazz, factory);
         return this;
     }
 
-    public <T> FatBoy addFieldConstant(Class clazz, String field, T value) {
-        return addFieldConstant(ReflectionUtils.getField(clazz, field), value);
+    public <T> FatBoy registerGenericFactory(Field field, GenericTypeFactory<T> factory) {
+        factoryRepository.addFactory(field, factory);
+        return this;
     }
 
-    public <T> FatBoy addFieldConstant(Field field, T value) {
+    public <T> FatBoy setFieldConstant(Class clazz, String field, T value) {
+        return setFieldConstant(ReflectionUtils.getField(clazz, field), value);
+    }
+
+    public <T> FatBoy setFieldConstant(Field field, T value) {
         return registerFieldFactory(field, () -> value);
     }
 
@@ -109,9 +118,7 @@ public class FatBoy {
         }
 
         try {
-            Constructor<T> constructor = ReflectionUtils.getDefaultOrFirstConstructor(clazz);
-            constructor.setAccessible(true);
-            return createInstance(constructor, overrides);
+            return createInstance(clazz, overrides);
         } catch (ClassInstantiationException e) {
             throw e;
         } catch (Exception e) {
@@ -125,7 +132,7 @@ public class FatBoy {
         if (type instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) type;
 
-            Class rawType = (Class) parameterizedType.getRawType();
+            Class<?> rawType = (Class) parameterizedType.getRawType();
             Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
 
             GenericClassFactory factory = factoryRepository.getFactoryForGenericType(rawType, parameterizedType);
@@ -133,7 +140,7 @@ public class FatBoy {
             if (factory != null) {
                 return factory.create(rawType, actualTypeArguments);
             } else {
-                throw new ClassInstantiationException("No generic factory for class " + rawType);
+                return createInstance(rawType, Maps.newHashMap(), actualTypeArguments);
             }
         } else if (type instanceof Class) {
             return create((Class) type);
@@ -142,23 +149,23 @@ public class FatBoy {
         }
     }
 
-    private <T> T createInstance(Constructor<T> constructor, Map<String, Object> overrides)
-            throws InstantiationException, IllegalAccessException, InvocationTargetException {
+    private <T> T createInstance(Class<T> rawType, Map<String, Object> overrides, Type... actualTypeArguments) {
+        try {
+            Constructor<T> constructor = ReflectionUtils.getDefaultOrFirstConstructor(rawType);
+            constructor.setAccessible(true);
 
-        List<Object> args = Arrays.asList(constructor.getGenericParameterTypes()).stream().map(x -> {
-            if (x instanceof Class) {
-                return create((Class)x);
-            } else {
-                return createGeneric(x);
-            }
-        }).collect(Collectors.toList());
+            List<Object> args = Arrays.asList(constructor.getGenericParameterTypes()).stream()
+                    .map(this::createGeneric)
+                    .collect(Collectors.toList());
 
-        T instance = constructor.newInstance(args.toArray());
-
-        return setFields(instance, overrides);
+            T instance = constructor.newInstance(args.toArray());
+            return setFields(instance, overrides, actualTypeArguments);
+        } catch (Exception e) {
+            throw new ClassInstantiationException(e.getMessage());
+        }
     }
 
-    private <T> T setFields(final T instance, Map<String, Object> overrides) {
+    private <T> T setFields(final T instance, Map<String, Object> overrides, Type... types) {
         ReflectionUtils.getAllDeclaredFields(instance.getClass()).stream()
                 .filter(x -> !ignored.contains(x.getType()))
                 .forEach(unchecked(field -> {
@@ -166,6 +173,12 @@ public class FatBoy {
 
                     if (overrides.containsKey(field.getName())) {
                         field.set(instance, overrides.get(field.getName()));
+                        return;
+                    }
+
+                    if (!(field.getGenericType() instanceof Class)) {
+                        Type resolvedType = resolveType(field, types, instance.getClass().getTypeParameters());
+                        field.set(instance, createGeneric(resolvedType));
                         return;
                     }
 
@@ -179,6 +192,14 @@ public class FatBoy {
                 }));
 
         return instance;
+    }
+
+    private Type resolveType(Field field, Type[] types, Type[] genericTypes) {
+        TypeResolver typeResolver = new TypeResolver();
+        for (int x = 0; x < types.length; x++) {
+            typeResolver = typeResolver.where(genericTypes[x], types[x]);
+        }
+        return typeResolver.resolveType(field.getGenericType());
     }
 
     @FunctionalInterface

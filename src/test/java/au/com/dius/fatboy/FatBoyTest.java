@@ -35,7 +35,7 @@ public class FatBoyTest {
 
     @Test
     public void addsClassConstant() {
-        PrimitiveClass primitiveClass = fatBoy.addClassConstant("hello").create(PrimitiveClass.class);
+        PrimitiveClass primitiveClass = fatBoy.setClassConstant("hello").create(PrimitiveClass.class);
 
         assertThat(primitiveClass.four, is("hello"));
     }
@@ -43,7 +43,7 @@ public class FatBoyTest {
     @Test
     public void addsFieldConstant() throws Exception {
         PrimitiveClass primitiveClass = fatBoy
-                .addFieldConstant(PrimitiveClass.class, "four", "hello")
+                .setFieldConstant(PrimitiveClass.class, "four", "hello")
                 .create(PrimitiveClass.class);
 
         assertThat(primitiveClass.four, is("hello"));
@@ -132,7 +132,7 @@ public class FatBoyTest {
     }
 
     @Test
-    public void appliesFieldFactoriesNumber2() throws Exception {
+    public void appliesFieldFactoriesOther() throws Exception {
         CompositeClass create = fatBoy
                 .registerFieldFactory(PrimitiveClass.class.getDeclaredField("four"), () -> "Stuff")
                 .create(CompositeClass.class);
@@ -183,28 +183,47 @@ public class FatBoyTest {
     public void customGenericClassFactoriesCanBePluggedIn() {
         List<String> expected = Lists.newArrayList("foosauce");
 
-        GenericListClass genericListClass = fatBoy.registerGenericClassFactory(List.class, (a, b) -> expected)
+        GenericListClass genericListClass = fatBoy.registerGenericFactory(List.class, (a, b) -> expected)
                 .create(GenericListClass.class);
 
         assertThat(genericListClass.strings, is(expected));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void explodesWhenGenericClassFactoryAddedForNonGenericClass() {
-        fatBoy.registerGenericClassFactory(PrimitiveClass.class, (a, b) -> null).create(PrimitiveClass.class);
+    public void explodesWhenRegisteringGenericClassFactoryForNonGenericClass() {
+        fatBoy.registerGenericFactory(PrimitiveClass.class, (a, b) -> null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void explodesWhenRegisteringGenericFieldFactoryForNonGenericField() throws Exception {
+        fatBoy.registerGenericFactory(PrimitiveClass.class.getDeclaredField("one"), (a, b) -> null);
     }
 
     @Test
-    public void shouldApplyGenericClassProviders() {
-        GenericClassContainer genericClassContainer = fatBoy
-                .registerGenericClassFactory(GenericClass.class, (raw, actual) -> {
-                    GenericClass genericClass = new GenericClass();
-                    genericClass.genericType = fatBoy.createGeneric(actual[0]);
-                    return genericClass;
+    public void shouldApplyGenericFieldProviders() throws Exception {
+        HarderGenericClassContainer genericClassContainer = fatBoy
+                .registerGenericFactory(MultiLevelGenericallyTypedClass.class.getDeclaredField("genericType"), (raw, actual) -> {
+                    HashMap hashMap = new HashMap();
+                    hashMap.put(fatBoy.createGeneric(actual[0]), fatBoy.createGeneric(actual[1]));
+                    return hashMap;
                 })
-                .create(GenericClassContainer.class);
+                .create(HarderGenericClassContainer.class);
 
-        assertThat(genericClassContainer.myFoo.genericType, is(notNullValue()));
+        assertThat(genericClassContainer.field.genericType, is(notNullValue()));
+    }
+
+    @Test
+    public void shouldMagicGenericClasses() {
+        HarderGenericClassContainer genericClassContainer = fatBoy.create(HarderGenericClassContainer.class);
+
+        assertThat(genericClassContainer.field.genericType, is(notNullValue()));
+    }
+
+    @Test
+    public void shouldInstantiateClassWithTypeVariables() {
+        GenericClassContainer genericClassContainer = fatBoy.create(GenericClassContainer.class);
+
+        assertThat(genericClassContainer.field.genericType, is(notNullValue()));
     }
 
     private static class PrimitiveClass {
@@ -274,15 +293,27 @@ public class FatBoyTest {
         }
     }
 
-    private static class GenericClass<T> {
+    private static class GenericallyTypedClass<T> {
         public T genericType;
     }
 
-    public static class GenericClassContainer {
-        private GenericClass<String> myFoo;
+    private static class MultiLevelGenericallyTypedClass<T> {
+        public Map<List<T>, Map<T, String>> genericType;
+    }
 
-        public GenericClassContainer(GenericClass<String> myFoo) {
-            this.myFoo = myFoo;
+    public static class HarderGenericClassContainer {
+        private MultiLevelGenericallyTypedClass<String> field;
+
+        public HarderGenericClassContainer(MultiLevelGenericallyTypedClass<String> field) {
+            this.field = field;
+        }
+    }
+
+    public static class GenericClassContainer {
+        private GenericallyTypedClass<String> field;
+
+        public GenericClassContainer(GenericallyTypedClass<String> field) {
+            this.field = field;
         }
     }
 

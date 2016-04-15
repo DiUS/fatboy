@@ -7,6 +7,7 @@ import au.com.dius.fatboy.factory.collections.CollectionFactory;
 import au.com.dius.fatboy.factory.collections.MapFactory;
 import au.com.dius.fatboy.factory.impl.SimpleClassFactory;
 import au.com.dius.fatboy.factory.impl.SimpleFieldFactory;
+import au.com.dius.fatboy.factory.impl.SimpleGenericFieldFactory;
 import au.com.dius.fatboy.factory.primitives.*;
 import au.com.dius.fatboy.factory.user.DateTimeFactory;
 import au.com.dius.fatboy.factory.user.UUIDFactory;
@@ -54,6 +55,13 @@ class FactoryRepository {
             throw new IllegalArgumentException("Addition of a generic class factory must only be used for generic classes");
         }
         addFactory(new SimpleClassFactory<>(clazz, factory));
+    }
+
+    public <T> void addFactory(Field field, GenericTypeFactory<T> factory) {
+        if (field.getType().getTypeParameters().length == 0) {
+            throw new IllegalArgumentException("Addition of a generic field factory must only be used for generic fields");
+        }
+        addFactory(new SimpleGenericFieldFactory<>(field, factory));
     }
 
     public <T extends ClassFactory> ClassFactory findFactory(Class<T> clazz) {

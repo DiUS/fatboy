@@ -14,8 +14,25 @@ Will create a new instance of MyClass, including subclasses
 
 ## Configuring it
 
+
 ### Utility configuration methods
 
+#### Passing configuration hints to class factories
+ You can set configuration for a provider by using the ```setFactoryConfig``` method.
+ Currently, the only factories that use a configuration object are the CollectionFactory and MapFactory
+
+ To set the amount of items they a CollectionFactory should add to it's collection you can do
+```java
+    fatBoy.setFactoryConfig(CollectionFactory.class, FieldCount.random(0,5))
+    // or for a constant value
+    fatBoy.setFactoryConfig(CollectionFactory.class, FieldCount.constant(5))
+```
+
+The``` FieldCount``` is a subclass of ```FactoryConfig```. If you want to create a custom ```ClassFactory``` and pass it a configuration object you can do the same as above.
+
+In the future more configuration objects will be added to allow defaults, range and constant setting for the primite factories (Strings, longs, ints etc).
+
+#### Custom Factories
 Once you have a fatboy instance, configuring it is simple. 
 
 Lets say you have the following class
@@ -48,7 +65,7 @@ Generic class types are createable too, see the section at the end for more info
 
 You can also add a constant value for any occurence of a class. To do this with ```MyClass``` do the following:
 ```java
-	fatBoy.addClassConstant(new MyClass())
+	fatBoy.setClassConstant(new MyClass())
 ```
 #### Field factories
 
@@ -62,9 +79,9 @@ Using the ```MyClass``` defined above, to get FatBoy to call your factory when i
 
 Fields can also have constant values attached, in a similar fashion to how class constants are registered
 ```java
-    fatBoy.addFieldConstant(MyClass.class, "reference", UUID.randomUUID())
+    fatBoy.setFieldConstant(MyClass.class, "reference", UUID.randomUUID())
     // or 
-    fatBoy.addFieldConstant(MyClass.class.getDeclaredField("reference"), UUID.randomUUID())
+    fatBoy.setFieldConstant(MyClass.class.getDeclaredField("reference"), UUID.randomUUID())
 ```
 #### Factories that receive an instance of FatBoy when they're called
 For when you want to define the values for some fields in your class, but want FatBoy to create the others. For the purposes of this example, lets assume ```MyClass``` has a constructor with fields defined in the order they're declared in. Here's how that would look
@@ -117,4 +134,6 @@ Lets look at what our registered generic class factory looks like.
         });
 ```
 
-You will be able to create instances of ```MyClass``` directly, but attempting to create a direct instance of the unknown-generic--type ```MyGenericClass``` without the field metadata providing the actual type arguments will not work. Hence ``` fatBoy.create(MyClass.class)``` will work 
+You will be able to create instances of ```MyClass``` directly, but attempting to create a direct instance of the unknown-generic--type ```MyGenericClass``` without the field metadata providing the actual type arguments will not work. Hence ``` fatBoy.create(MyClass.class)``` will work .
+
+Generic field factories are similar, but easier to use because you don't have to try and determine the entire type of a paramtrized field yourself, instead a resolved version will be passed to you as the ```actualType``` param.
