@@ -101,9 +101,6 @@ You can add overrides for fields in the top level of the object you're creating 
   fatBoy.create(MyClass.class, overrides);
 ```
 
-#### Custom ClassFactory implementation
-If you want to create
-
 #### Generic class factories
 
 Lets assume ```MyGenericClass``` is defined as follows
