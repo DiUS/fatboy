@@ -1,5 +1,6 @@
 package au.com.dius.fatboy;
 
+import au.com.dius.fatboy.config.Configurer;
 import au.com.dius.fatboy.factory.ClassFactory;
 import au.com.dius.fatboy.factory.GenericClassFactory;
 import au.com.dius.fatboy.factory.GenericTypeFactory;
@@ -36,6 +37,12 @@ class FactoryRepository {
 
         factories.add(new UUIDFactory());
         factories.add(new DateTimeFactory());
+
+        applyHints();
+    }
+
+    private void applyHints() {
+        factories.forEach(Configurer::applyHints);
     }
 
     public <T> void addFactory(ClassFactory<T> classFactory) {

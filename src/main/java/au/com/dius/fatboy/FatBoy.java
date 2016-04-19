@@ -3,7 +3,7 @@ package au.com.dius.fatboy;
 import au.com.dius.fatboy.factory.ClassFactory;
 import au.com.dius.fatboy.factory.GenericClassFactory;
 import au.com.dius.fatboy.factory.GenericTypeFactory;
-import au.com.dius.fatboy.factory.config.FactoryConfig;
+import au.com.dius.fatboy.factory.config.FactoryHint;
 import au.com.dius.fatboy.utils.ReflectionUtils;
 import com.github.javafaker.Faker;
 import com.google.common.collect.Maps;
@@ -92,8 +92,8 @@ public class FatBoy {
         return this;
     }
 
-    public <T extends ClassFactory> FatBoy setFactoryConfig(Class<T> factoryClass, FactoryConfig factoryConfig) {
-        findFactory(factoryClass).setConfig(factoryConfig);
+    public <T extends ClassFactory> FatBoy hint(Class<T> factoryClass, FactoryHint factoryHint) {
+        findFactory(factoryClass).putHint(factoryHint);
         return this;
     }
 
@@ -206,4 +206,5 @@ public class FatBoy {
     public static interface FatBoyProvidedFactory<T> {
         T create(FatBoy fatBoy);
     }
+
 }

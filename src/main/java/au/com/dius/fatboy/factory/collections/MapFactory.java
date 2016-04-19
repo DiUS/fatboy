@@ -1,7 +1,7 @@
 package au.com.dius.fatboy.factory.collections;
 
 import au.com.dius.fatboy.FatBoy;
-import au.com.dius.fatboy.factory.config.FieldCount;
+import au.com.dius.fatboy.factory.config.FieldLength;
 import au.com.dius.fatboy.factory.impl.AbstractGenericClassFactory;
 
 import java.lang.reflect.Field;
@@ -14,7 +14,7 @@ public class MapFactory extends AbstractGenericClassFactory<Map> {
     private FatBoy fatBoy;
 
     public MapFactory(FatBoy fatBoy) {
-        super(Map.class, FieldCount.constant(1));
+        super(Map.class, FieldLength.constant(1));
         this.fatBoy = fatBoy;
     }
 
@@ -34,7 +34,7 @@ public class MapFactory extends AbstractGenericClassFactory<Map> {
     public Map create(Class rawType, final Type[] actualParameters) {
         final Map instance = new HashMap();
 
-        int fieldCount = getConfig(FieldCount.class).fieldCount();
+        int fieldCount = getHint(FieldLength.class).getLength();
 
         for (int x = 0; x < fieldCount; x++) {
             Object keyValue = fatBoy.createGeneric(actualParameters[0]);

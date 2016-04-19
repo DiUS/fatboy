@@ -2,7 +2,7 @@ package au.com.dius.fatboy.factory.collections;
 
 import au.com.dius.fatboy.ClassInstantiationException;
 import au.com.dius.fatboy.FatBoy;
-import au.com.dius.fatboy.factory.config.FieldCount;
+import au.com.dius.fatboy.factory.config.FieldLength;
 import au.com.dius.fatboy.factory.impl.AbstractGenericClassFactory;
 
 import java.lang.reflect.Field;
@@ -19,7 +19,7 @@ public class CollectionFactory extends AbstractGenericClassFactory<Collection> {
     private FatBoy fatBoy;
 
     public CollectionFactory(FatBoy fatBoy) {
-        super(Collection.class, FieldCount.constant(1));
+        super(Collection.class, FieldLength.constant(1));
         this.fatBoy = fatBoy;
     }
 
@@ -37,7 +37,7 @@ public class CollectionFactory extends AbstractGenericClassFactory<Collection> {
 
     @Override
     public Collection create(Class rawType, final Type[] actualParameters) {
-        int count = getConfig(FieldCount.class).fieldCount();
+        int count = getHint(FieldLength.class).getLength();
         try {
             final Collection instance = (Collection) classesMap.get(rawType).newInstance();
 

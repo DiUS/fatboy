@@ -1,5 +1,6 @@
 package au.com.dius.fatboy.factory.primitives;
 
+import au.com.dius.fatboy.factory.config.FieldLength;
 import au.com.dius.fatboy.factory.impl.AbstractClassFactory;
 
 import java.lang.reflect.Field;
@@ -12,7 +13,6 @@ public class IntFactory extends AbstractClassFactory<Integer> {
 
     @Override
     public Integer create(Field field) {
-        return (int) (Math.random() * 10000);
+        return getHint(FieldLength.class).getLength();
     }
-
 }

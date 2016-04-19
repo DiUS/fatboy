@@ -1,8 +1,10 @@
 package au.com.dius.fatboy;
 
 import au.com.dius.fatboy.factory.collections.CollectionFactory;
-import au.com.dius.fatboy.factory.config.FieldCount;
+import au.com.dius.fatboy.factory.config.FieldLength;
 import au.com.dius.fatboy.factory.impl.AbstractClassFactory;
+import au.com.dius.fatboy.factory.primitives.StringFactory;
+import au.com.dius.fatboy.factory.semantic.SemanticFieldFactoryHint;
 import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,6 +13,7 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -115,7 +118,7 @@ public class FatBoyTest {
     @Test
     public void appliesFactoryConfigForLists() {
         GenericListClass create = new FatBoy()
-                .setFactoryConfig(CollectionFactory.class, FieldCount.random(3, 5))
+                .hint(CollectionFactory.class, FieldLength.random(3, 5))
                 .create(GenericListClass.class);
 
         assertThat(create.strings.size(), greaterThanOrEqualTo(3));
@@ -224,6 +227,18 @@ public class FatBoyTest {
         GenericClassContainer genericClassContainer = fatBoy.create(GenericClassContainer.class);
 
         assertThat(genericClassContainer.field.genericType, is(notNullValue()));
+    }
+
+    @Test
+    public void shouldAllowPluginOfFactoriesForFieldNamesMatchingAPattern() {
+        SemanticFieldFactoryHint<String> factoryHint = new SemanticFieldFactoryHint<>(String.class);
+        factoryHint.addFieldMatcher(Pattern.compile("four"), () -> "helllo");
+
+        PrimitiveClass primitiveClass = fatBoy
+                .hint(StringFactory.class, factoryHint)
+                .create(PrimitiveClass.class);
+
+        assertThat(primitiveClass.four, is("helllo"));
     }
 
     private static class PrimitiveClass {

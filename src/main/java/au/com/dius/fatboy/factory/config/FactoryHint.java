@@ -1,4 +1,4 @@
 package au.com.dius.fatboy.factory.config;
 
-public class FactoryConfig {
+public class FactoryHint {
 }

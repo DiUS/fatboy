@@ -9,7 +9,6 @@ FatBoy is a fixture generation tool created with the aim of reducing the boilerp
 ```
 new FatBoy().create(MyClass.class)
 ```
-
 Will create a new instance of MyClass, including subclasses
 
 ## Configuring it
@@ -18,19 +17,44 @@ Will create a new instance of MyClass, including subclasses
 ### Utility configuration methods
 
 #### Passing configuration hints to class factories
- You can set configuration for a provider by using the ```setFactoryConfig``` method.
- Currently, the only factories that use a configuration object are the CollectionFactory and MapFactory
+You can configure a FatBoy instance directly with hints, or you can override the defaults so any new instance of will use those values.
 
- To set the amount of items they a CollectionFactory should add to it's collection you can do
+**Per instance configuration**
+```FactoryHint```'s allow you to pass user-defined or existing objects to class factories to provide hints about how they should create objects using the ```upsertFactoryHint``` method.
+
+For example, to set the amount of items that a CollectionFactory should add to it's collection you can do
 ```java
-    fatBoy.setFactoryConfig(CollectionFactory.class, FieldCount.random(0,5))
+    fatBoy.hint(CollectionFactory.class, FieldCount.random(0,5))
     // or for a constant value
-    fatBoy.setFactoryConfig(CollectionFactory.class, FieldCount.constant(5))
+    fatBoy.hint(CollectionFactory.class, FieldCount.constant(5))
 ```
 
-The``` FieldCount``` is a subclass of ```FactoryConfig```. If you want to create a custom ```ClassFactory``` and pass it a configuration object you can do the same as above.
+Currently all FatBoy class factories extend ```AbstractClassFactory``` which prevents multiple of the same class of hints from being added.
 
-In the future more configuration objects will be added to allow defaults, range and constant setting for the primite factories (Strings, longs, ints etc).
+**Overridding the defaults**
+By using the ```Configurer``` class, you can change the default settings for the lengths for strings, ints and longs, as well as being able to change the default date/datetime/time formatters. Here are all the current methods for configuration. The date methods change the dateformatter for the StringFactory's semantic field matching functionality (matching a field name based on a regex).
+
+Here's the current defaults
+
+```java
+Configurer.configure()
+	.collections(FieldLength.random(2, 5))
+    .strings(FieldLength.random(10, 25))
+    .dateTimeStrings(ISODateTimeFormat.dateHourMinute())
+    .dateStrings(ISODateTimeFormat.yearMonthDay())
+    .timeStrings(ISODateTimeFormat.hourMinuteSecond())
+    .integers(FieldLength.random(0, 100000))
+    .longints(FieldLength.random(0, 1000000))
+```
+
+* ```dateTimeStrings``` matches String fields containing the word 'datetime'
+	* Matches  'someDateTime',  doesn't match 'somedatefoo'
+* ```dateStrings``` matches String fields containing the word 'date' (with no 'time' after it)
+	* Matches 'somedatefoo', does not  match 'someDateSomeTime'
+* ```timeStrings``` matches String fields containing the word 'time' (with no 'date' prefix)
+	* Matches 'sometimefoo', does not match 'someDatesomeTimeFoo'
+
+Calling ```Configurer.reset()``` will reset the defaults for any FatBoy instances created afterwards
 
 #### Custom Factories
 Once you have a fatboy instance, configuring it is simple. 

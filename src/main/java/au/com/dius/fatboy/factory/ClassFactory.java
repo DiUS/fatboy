@@ -1,6 +1,6 @@
 package au.com.dius.fatboy.factory;
 
-import au.com.dius.fatboy.factory.config.FactoryConfig;
+import au.com.dius.fatboy.factory.config.FactoryHint;
 
 import java.lang.reflect.Field;
 
@@ -29,7 +29,13 @@ public interface ClassFactory<T> {
     T create(Field field);
 
     /**
-     * @param config the new FactoryConfig for this factory
+     * @param hint a new FactoryHint. If any FactoryHint with the same class exists, it should be replaced by this one.
      */
-    void setConfig(FactoryConfig config);
+    void putHint(FactoryHint hint);
+
+    /**
+     * @param clazz The subclass of FactoryHint you want to remove
+     * @param <P> a {@code FactoryHint} subclass
+     */
+    public <P extends FactoryHint> void removeHint(Class<P> clazz);
 }

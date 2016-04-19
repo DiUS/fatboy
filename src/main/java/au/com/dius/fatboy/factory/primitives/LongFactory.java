@@ -1,5 +1,6 @@
 package au.com.dius.fatboy.factory.primitives;
 
+import au.com.dius.fatboy.factory.config.FieldLength;
 import au.com.dius.fatboy.factory.impl.AbstractClassFactory;
 
 import java.lang.reflect.Field;
@@ -12,7 +13,7 @@ public class LongFactory extends AbstractClassFactory<Long> {
 
     @Override
     public Long create(Field field) {
-        return (long) (Math.random() * 10000);
+        return getHint(FieldLength.class).getLongLength();
     }
 
 }

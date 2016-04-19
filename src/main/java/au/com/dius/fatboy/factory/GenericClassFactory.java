@@ -1,6 +1,6 @@
 package au.com.dius.fatboy.factory;
 
-import au.com.dius.fatboy.factory.config.FactoryConfig;
+import au.com.dius.fatboy.factory.config.FactoryHint;
 
 import java.lang.reflect.Type;
 
@@ -27,7 +27,7 @@ public interface GenericClassFactory<T> extends ClassFactory<T> {
     T create(Class rawType, Type[] actualTypeArguments);
 
     /**
-     * @param config the new FactoryConfig for this factory
+     * @param hint the new FactoryConfig for this factory
      */
-    void setConfig(FactoryConfig config);
+    void putHint(FactoryHint hint);
 }
