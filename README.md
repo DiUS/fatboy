@@ -43,6 +43,7 @@ Configurer.configure()
     .dateTimeStrings(ISODateTimeFormat.dateHourMinute())
     .dateStrings(ISODateTimeFormat.yearMonthDay())
     .timeStrings(ISODateTimeFormat.hourMinuteSecond())
+    .identifierStrings(FieldLength.constant(4))
     .integers(FieldLength.random(0, 100000))
     .longints(FieldLength.random(0, 1000000))
 ```
@@ -53,6 +54,8 @@ Configurer.configure()
 	* Matches 'somedatefoo', does not  match 'someDateSomeTime'
 * ```timeStrings``` matches String fields containing the word 'time' (with no 'date' prefix)
 	* Matches 'sometimefoo', does not match 'someDatesomeTimeFoo'
+* ```identifierSEtrings``` matches String fields with the name 'id'
+	* Matches 'id', does not match 'idiom'
 
 Calling ```Configurer.reset()``` will reset the defaults for any FatBoy instances created afterwards
 
