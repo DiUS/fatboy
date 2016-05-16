@@ -102,6 +102,14 @@ public class ConfigurerTest {
     }
 
     @Test
+    public void shouldConfigureIdentifierStrings() {
+        Configurer.configure().identifierStrings(FieldLength.constant(10));
+        IdentifierClass id = new FatBoy().create(IdentifierClass.class);
+
+        assertThat(id.id.length(), is(10));
+    }
+
+    @Test
     public void dateTimeStringsShouldHaveNoOverlappingMatchers() {
         Configurer.configure().dateStrings(ISODateTimeFormat.basicDate());
         Configurer.configure().timeStrings(ISODateTimeFormat.basicDate());
@@ -132,6 +140,10 @@ public class ConfigurerTest {
         private String aDate;
         private String someDateTime;
         private String someTime;
+    }
+
+    private static class IdentifierClass {
+        private String id;
     }
 
     private static class PrimitiveClass {

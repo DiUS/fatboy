@@ -22,6 +22,7 @@ public class TimeStringSemanticFieldFactoryTest {
         assertThat(factory.supports(field("someTimeThing")), is(true));
         assertThat(factory.supports(field("someTimeout")), is(false));
         assertThat(factory.supports(field("aDateWithTime")), is(false));
+        assertThat(factory.supports(field("aDatewithTime")), is(false));
         assertThat(factory.supports(field("random")), is(false));
     }
 
@@ -35,6 +36,7 @@ public class TimeStringSemanticFieldFactoryTest {
         private String someTimeThing;
         private String someTimeout;
         private String aDateWithTime;
+        private String aDatewithTime;
         private String random;
     }
 

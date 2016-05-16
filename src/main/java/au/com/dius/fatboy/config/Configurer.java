@@ -10,6 +10,7 @@ import au.com.dius.fatboy.factory.primitives.StringFactory;
 import au.com.dius.fatboy.factory.semantic.date.DateStringSemanticFieldFactory;
 import au.com.dius.fatboy.factory.semantic.date.DateTimeStringSemanticFieldFactory;
 import au.com.dius.fatboy.factory.semantic.date.TimeStringSemanticFieldFactory;
+import au.com.dius.fatboy.factory.semantic.id.IdentifierStringSemanticFieldFactory;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import org.joda.time.format.DateTimeFormatter;
@@ -27,41 +28,46 @@ public class Configurer {
     }
 
     public Configurer dateTimeStrings(DateTimeFormatter formatter) {
-        replace(StringFactory.class, new DateTimeStringSemanticFieldFactory(formatter));
+        replaceHint(StringFactory.class, new DateTimeStringSemanticFieldFactory(formatter));
         return this;
     }
 
     public Configurer dateStrings(DateTimeFormatter formatter) {
-        replace(StringFactory.class, new DateStringSemanticFieldFactory(formatter));
+        replaceHint(StringFactory.class, new DateStringSemanticFieldFactory(formatter));
         return this;
     }
 
     public Configurer timeStrings(DateTimeFormatter formatter) {
-        replace(StringFactory.class, new TimeStringSemanticFieldFactory(formatter));
+        replaceHint(StringFactory.class, new TimeStringSemanticFieldFactory(formatter));
+        return this;
+    }
+
+    public Configurer identifierStrings(FieldLength fieldLength) {
+        replaceHint(StringFactory.class, new IdentifierStringSemanticFieldFactory(fieldLength));
         return this;
     }
 
     public Configurer collections(FieldLength fieldLength) {
-        replace(CollectionFactory.class, fieldLength);
+        replaceHint(CollectionFactory.class, fieldLength);
         return this;
     }
 
     public Configurer strings(FieldLength fieldLength) {
-        replace(StringFactory.class, fieldLength);
+        replaceHint(StringFactory.class, fieldLength);
         return this;
     }
 
     public Configurer integers(FieldLength fieldLength) {
-        replace(IntFactory.class, fieldLength);
+        replaceHint(IntFactory.class, fieldLength);
         return this;
     }
 
     public Configurer longints(FieldLength fieldLength) {
-        replace(LongFactory.class, fieldLength);
+        replaceHint(LongFactory.class, fieldLength);
         return this;
     }
 
-    private <T extends ClassFactory> void replace(Class<T> factoryClass, FactoryHint replacement) {
+    private <T extends ClassFactory> void replaceHint(Class<T> factoryClass, FactoryHint replacement) {
         Collection<FactoryHint> factoryHints = configuration.get(factoryClass);
 
         FactoryHint existingHint = factoryHints.stream()
@@ -80,6 +86,7 @@ public class Configurer {
         configuration.put(StringFactory.class, new DateTimeStringSemanticFieldFactory());
         configuration.put(StringFactory.class, new DateStringSemanticFieldFactory());
         configuration.put(StringFactory.class, new TimeStringSemanticFieldFactory());
+        configuration.put(StringFactory.class, new IdentifierStringSemanticFieldFactory());
         configuration.put(IntFactory.class, FieldLength.random(0, 100000));
         configuration.put(LongFactory.class, FieldLength.random(0, 1000000));
 
