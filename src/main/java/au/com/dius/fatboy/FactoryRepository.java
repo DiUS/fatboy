@@ -4,6 +4,7 @@ import au.com.dius.fatboy.config.Configurer;
 import au.com.dius.fatboy.factory.ClassFactory;
 import au.com.dius.fatboy.factory.GenericClassFactory;
 import au.com.dius.fatboy.factory.GenericTypeFactory;
+import au.com.dius.fatboy.factory.collections.ArrayFactory;
 import au.com.dius.fatboy.factory.collections.CollectionFactory;
 import au.com.dius.fatboy.factory.collections.MapFactory;
 import au.com.dius.fatboy.factory.impl.SimpleClassFactory;
@@ -31,6 +32,8 @@ class FactoryRepository {
         factories.add(new LongFactory());
 
         factories.add(new EnumFactory());
+
+        factories.add(new ArrayFactory(fatboy));
 
         factories.add(new CollectionFactory(fatboy));
         factories.add(new MapFactory(fatboy));

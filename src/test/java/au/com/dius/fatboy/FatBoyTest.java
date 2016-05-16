@@ -241,6 +241,13 @@ public class FatBoyTest {
         assertThat(primitiveClass.four, is("helllo"));
     }
 
+    @Test
+    public void shouldPopulateArrayTypes() {
+        ArrayClass arrays = new FatBoy().create(ArrayClass.class);
+
+        assertThat(arrays.strings.length, greaterThan(0));
+    }
+
     private static class PrimitiveClass {
         int one;
         long two;
@@ -330,6 +337,10 @@ public class FatBoyTest {
         public GenericClassContainer(GenericallyTypedClass<String> field) {
             this.field = field;
         }
+    }
+
+    private static class ArrayClass {
+        private String[] strings;
     }
 
     private <K, V> Map<K, V> map(K key, V value) {

@@ -10,10 +10,7 @@ import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeResolver;
 
 import java.lang.ref.SoftReference;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -143,7 +140,12 @@ public class FatBoy {
                 return createInstance(rawType, Maps.newHashMap(), actualTypeArguments);
             }
         } else if (type instanceof Class) {
-            return create((Class) type);
+            if(((Class)type).isArray()) {
+                GenericClassFactory classFactory = factoryRepository.getFactoryForGenericType((Class)type, ((Class)type).getComponentType());
+                return classFactory.create((Class)type, null);
+            } else {
+                return create((Class) type);
+            }
         } else {
             throw new ClassInstantiationException("Unknown generic type: [" + type + "]");
         }
