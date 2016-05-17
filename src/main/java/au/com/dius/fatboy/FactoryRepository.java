@@ -10,6 +10,7 @@ import au.com.dius.fatboy.factory.collections.MapFactory;
 import au.com.dius.fatboy.factory.impl.SimpleClassFactory;
 import au.com.dius.fatboy.factory.impl.SimpleFieldFactory;
 import au.com.dius.fatboy.factory.impl.SimpleGenericFieldFactory;
+import au.com.dius.fatboy.factory.noop.NullFactory;
 import au.com.dius.fatboy.factory.primitives.*;
 import au.com.dius.fatboy.factory.user.DateTimeFactory;
 import au.com.dius.fatboy.factory.user.UUIDFactory;
@@ -23,8 +24,10 @@ import java.util.function.Supplier;
 
 class FactoryRepository {
     private final List<ClassFactory> factories;
+    private NullFactory nullFactory;
 
     public FactoryRepository(FatBoy fatboy) {
+        nullFactory = new NullFactory();
         factories = Lists.newArrayList();
         factories.add(new StringFactory());
         factories.add(new IntFactory());
@@ -74,6 +77,10 @@ class FactoryRepository {
         addFactory(new SimpleGenericFieldFactory<>(field, factory));
     }
 
+    public void addIgnoredClass(Class<?> clazz) {
+        nullFactory.addIgnoredClass(clazz);
+    }
+
     public <T extends ClassFactory> ClassFactory findFactory(Class<T> clazz) {
         return getFactory(x -> x.getClass().isAssignableFrom(clazz));
     }
@@ -94,6 +101,10 @@ class FactoryRepository {
 
     @SuppressWarnings("unchecked")
     private <T> ClassFactory<T> getFactory(Predicate<ClassFactory> predicate) {
+        if(predicate.test(nullFactory)) {
+            return (ClassFactory<T>)nullFactory;
+        }
+
         return (ClassFactory<T>) factories.stream()
                 .filter(predicate)
                 .findFirst()

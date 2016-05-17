@@ -37,6 +37,23 @@ public class FatBoyTest {
     }
 
     @Test
+    public void shouldIgnoreTopLevelClasses() {
+        assertThat(new FatBoy().addIgnoredClass(ArrayClass.class).create(ArrayClass.class), is(nullValue()));
+    }
+
+    @Test
+    public void shouldIgnoreTopLevelGenericClasses() {
+        HarderGenericClassContainer generic = new FatBoy().addIgnoredClass(MultiLevelGenericallyTypedClass.class).create(HarderGenericClassContainer.class);
+        assertThat(generic.field, is(nullValue()));
+    }
+
+    @Test
+    public void shouldIgnoreArrayClasses() {
+        ArrayClass generic = new FatBoy().addIgnoredClass(String[].class).create(ArrayClass.class);
+        assertThat(generic.strings, is(nullValue()));
+    }
+
+    @Test
     public void addsClassConstant() {
         PrimitiveClass primitiveClass = fatBoy.setClassConstant("hello").create(PrimitiveClass.class);
 

@@ -23,14 +23,11 @@ import static au.com.dius.fatboy.utils.LambdaUtils.unchecked;
 public class FatBoy {
     public static final Faker FAKER = new Faker();
 
-    private List<Class> ignored = new ArrayList<Class>() {{
-        add(SoftReference.class);
-    }};
-
     private final FactoryRepository factoryRepository;
 
     public FatBoy() {
         factoryRepository = new FactoryRepository(this);
+        factoryRepository.addIgnoredClass(SoftReference.class);
     }
 
     public <T> FatBoy registerClassFactory(ClassFactory<T> factory) {
@@ -85,7 +82,7 @@ public class FatBoy {
     }
 
     public FatBoy addIgnoredClass(Class clazz) {
-        ignored.add(clazz);
+        factoryRepository.addIgnoredClass(clazz);
         return this;
     }
 
@@ -169,7 +166,6 @@ public class FatBoy {
 
     private <T> T setFields(final T instance, Map<String, Object> overrides, Type... types) {
         ReflectionUtils.getAllDeclaredFields(instance.getClass()).stream()
-                .filter(x -> !ignored.contains(x.getType()))
                 .forEach(unchecked(field -> {
                     field.setAccessible(true);
 
