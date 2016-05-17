@@ -265,6 +265,13 @@ public class FatBoyTest {
         assertThat(arrays.strings.length, greaterThan(0));
     }
 
+    @Test(expected = RuntimeException.class)
+    public void shouldProvideReasonableErrorMessges() {
+        new FatBoy()
+                .registerFieldFactory(ErrorMessageClassInner.class, "foo", () -> { throw new RuntimeException("Somethng bad happened"); })
+                .create(ErrorMessageClass.class);
+    }
+
     private static class PrimitiveClass {
         int one;
         long two;
@@ -364,5 +371,13 @@ public class FatBoyTest {
         return new HashMap<K, V>() {{
             put(key, value);
         }};
+    }
+
+    private static class ErrorMessageClassInner {
+        private String foo;
+    }
+
+    private static class ErrorMessageClass {
+        private List<ErrorMessageClassInner> inner;
     }
 }

@@ -11,6 +11,7 @@ import au.com.dius.fatboy.factory.semantic.date.DateStringSemanticFieldFactory;
 import au.com.dius.fatboy.factory.semantic.date.DateTimeStringSemanticFieldFactory;
 import au.com.dius.fatboy.factory.semantic.date.TimeStringSemanticFieldFactory;
 import au.com.dius.fatboy.factory.semantic.id.IdentifierStringSemanticFieldFactory;
+import au.com.dius.fatboy.factory.semantic.name.NameStringSemanticFieldFactory;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import org.joda.time.format.DateTimeFormatter;
@@ -87,6 +88,7 @@ public class Configurer {
         configuration.put(StringFactory.class, new DateStringSemanticFieldFactory());
         configuration.put(StringFactory.class, new TimeStringSemanticFieldFactory());
         configuration.put(StringFactory.class, new IdentifierStringSemanticFieldFactory());
+        configuration.put(StringFactory.class, new NameStringSemanticFieldFactory());
         configuration.put(IntFactory.class, FieldLength.random(0, 100000));
         configuration.put(LongFactory.class, FieldLength.random(0, 1000000));
 

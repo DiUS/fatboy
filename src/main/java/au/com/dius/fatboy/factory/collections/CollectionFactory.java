@@ -46,7 +46,7 @@ public class CollectionFactory extends AbstractGenericClassFactory<Collection> {
             }
             return instance;
         } catch (Exception e) {
-            throw new ClassInstantiationException("Unable to create collection with generic type [" + rawType + "]");
+            throw new ClassInstantiationException("Unable to create collection with generic type [" + rawType + "]", e);
         }
     }
 }

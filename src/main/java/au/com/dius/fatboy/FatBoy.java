@@ -8,6 +8,7 @@ import au.com.dius.fatboy.utils.ReflectionUtils;
 import com.github.javafaker.Faker;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.TypeResolver;
+import org.apache.commons.lang.exception.ExceptionUtils;
 
 import java.lang.ref.SoftReference;
 import java.lang.reflect.*;
@@ -114,7 +115,7 @@ public class FatBoy {
         try {
             return createInstance(clazz, overrides);
         } catch (ClassInstantiationException e) {
-            throw e;
+            throw (RuntimeException)ExceptionUtils.getRootCause(e);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -160,7 +161,7 @@ public class FatBoy {
             T instance = constructor.newInstance(args.toArray());
             return setFields(instance, overrides, actualTypeArguments);
         } catch (Exception e) {
-            throw new ClassInstantiationException(e.getMessage());
+            throw new ClassInstantiationException(e.getMessage(), e);
         }
     }
 
