@@ -19,6 +19,11 @@ public class MapFactory extends AbstractGenericClassFactory<Map> {
     }
 
     @Override
+    public boolean supports(Field field) {
+        return false;
+    }
+
+    @Override
     public boolean supports(Class clazz, Type genericType) {
         return clazz == Map.class && genericType != null;
     }

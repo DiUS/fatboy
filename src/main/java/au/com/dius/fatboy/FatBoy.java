@@ -123,12 +123,22 @@ public class FatBoy {
         return null;
     }
 
-    public Object createGeneric(Type type) {
+    public Object createGeneric(Type type, Field field) {
         if (type instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) type;
 
             Class<?> rawType = (Class) parameterizedType.getRawType();
             Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+
+            ClassFactory fieldFactory = factoryRepository.getFactoryForField(field);
+
+            if(fieldFactory != null) {
+                if(fieldFactory instanceof GenericClassFactory) {
+                    return ((GenericClassFactory)fieldFactory).create(rawType, actualTypeArguments);
+                } else {
+                    return fieldFactory.create(field);
+                }
+            }
 
             GenericClassFactory factory = factoryRepository.getFactoryForGenericType(rawType, parameterizedType);
 
@@ -147,6 +157,10 @@ public class FatBoy {
         } else {
             throw new ClassInstantiationException("Unknown generic type: [" + type + "]");
         }
+    }
+
+    public Object createGeneric(Type type) {
+        return createGeneric(type, null);
     }
 
     private <T> T createInstance(Class<T> rawType, Map<String, Object> overrides, Type... actualTypeArguments) {
@@ -177,7 +191,7 @@ public class FatBoy {
 
                     if (!(field.getGenericType() instanceof Class)) {
                         Type resolvedType = resolveType(field, types, instance.getClass().getTypeParameters());
-                        field.set(instance, createGeneric(resolvedType));
+                        field.set(instance, createGeneric(resolvedType, field));
                         return;
                     }
 

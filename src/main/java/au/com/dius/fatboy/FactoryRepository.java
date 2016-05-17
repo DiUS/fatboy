@@ -90,6 +90,10 @@ class FactoryRepository {
     }
 
     public <T> ClassFactory<T> getFactoryForField(Field field) {
+        if(field == null) {
+            return null;
+        }
+
         return getFactory(x -> x.supports(field));
     }
 

@@ -272,6 +272,17 @@ public class FatBoyTest {
                 .create(ErrorMessageClass.class);
     }
 
+    @Test
+    public void shouldUseClassFactoriesInGenericTypes() {
+        PrimitiveClass expected = new PrimitiveClass();
+
+        CompositeClass actual = new FatBoy()
+                .registerFieldFactory(CompositeClass.class, "primitives", () -> Lists.newArrayList(expected))
+                .create(CompositeClass.class);
+
+        assertThat(actual.primitives.get(0), sameInstance(expected));
+    }
+
     private static class PrimitiveClass {
         int one;
         long two;
