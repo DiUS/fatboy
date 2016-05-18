@@ -2,9 +2,7 @@ package au.com.dius.fatboy.utils;
 
 import com.google.common.collect.Lists;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +18,56 @@ public class ReflectionUtils {
     public static List<Field> getAllDeclaredFields(Class clazz) {
         List<Field> declaredFields = getFieldsInSuperclasses(clazz);
         return excludeSyntheticAndStaticFields(declaredFields);
+    }
+
+
+    public static Field getField(Class clazz, String fieldName) {
+        return unchecked(() -> clazz.getDeclaredField(fieldName));
+    }
+
+    public static boolean isArrayType(Type type) {
+        return (type instanceof Class && ((Class) type).isArray()) || type instanceof GenericArrayType;
+    }
+
+    public static boolean classIsGeneric(Class<?> clazz) {
+        return clazz.getGenericSuperclass() != Object.class;
+    }
+
+    public static Class getRawType(Type type) {
+        if (type instanceof GenericArrayType) {
+            GenericArrayType arrayType = (GenericArrayType) type;
+            return Array.newInstance((Class) ((ParameterizedType) arrayType.getGenericComponentType()).getRawType(), 0).getClass();
+        }
+        if (type instanceof ParameterizedType) {
+            return (Class) ((ParameterizedType) type).getRawType();
+        }
+
+        return (Class) type;
+    }
+
+    public static Type[] getActualTypeArgs(Type type) {
+        if (type instanceof GenericArrayType) {
+            return new Type[]{ type };
+        }
+        if (type instanceof ParameterizedType) {
+            return ((ParameterizedType) type).getActualTypeArguments();
+        }
+
+        return new Type[]{type};
+    }
+
+    public static boolean typeIsFullyResolved(Field field) {
+        Type genericType = field.getGenericType();
+        return typeIsFullyResolved(genericType);
+    }
+
+    public static Type[] getClassTypeArguments(Class<?> rawType) {
+        if(rawType.getGenericSuperclass() instanceof ParameterizedType) {
+            ParameterizedType genericSuperclass = (ParameterizedType) rawType.getGenericSuperclass();
+            return genericSuperclass.getActualTypeArguments();
+        }
+
+        return new Type[]{rawType.getGenericSuperclass()};
     }
 
     @SuppressWarnings("unchecked")
@@ -54,7 +102,15 @@ public class ReflectionUtils {
         return declaredFields;
     }
 
-    public static Field getField(Class clazz, String fieldName) {
-        return unchecked(() -> clazz.getDeclaredField(fieldName));
+    private static boolean typeIsFullyResolved(Type type) {
+        if (type instanceof GenericArrayType) {
+            return typeIsFullyResolved(((GenericArrayType) type).getGenericComponentType());
+        }
+        if (type instanceof ParameterizedType) {
+            Type[] actualTypeArguments = ((ParameterizedType) type).getActualTypeArguments();
+            return Lists.newArrayList(actualTypeArguments).stream().allMatch(ReflectionUtils::typeIsFullyResolved);
+        }
+
+        return type instanceof Class;
     }
 }

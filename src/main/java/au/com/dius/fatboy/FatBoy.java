@@ -11,8 +11,10 @@ import com.google.common.reflect.TypeResolver;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 import java.lang.ref.SoftReference;
-import java.lang.reflect.*;
-import java.util.ArrayList;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +22,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static au.com.dius.fatboy.utils.LambdaUtils.unchecked;
+import static au.com.dius.fatboy.utils.ReflectionUtils.getActualTypeArgs;
+import static au.com.dius.fatboy.utils.ReflectionUtils.getRawType;
 
 public class FatBoy {
     public static final Faker FAKER = new Faker();
@@ -97,7 +101,6 @@ public class FatBoy {
     }
 
     public <T> T create(Class<T> clazz, Map<String, Object> overrides) {
-
         ClassFactory<T> factory = factoryRepository.getFactoryForClass(clazz);
 
         if (factory != null) {
@@ -115,7 +118,7 @@ public class FatBoy {
         try {
             return createInstance(clazz, overrides);
         } catch (ClassInstantiationException e) {
-            throw (RuntimeException)ExceptionUtils.getRootCause(e);
+            throw (RuntimeException) ExceptionUtils.getRootCause(e);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -123,48 +126,41 @@ public class FatBoy {
         return null;
     }
 
-    public Object createGeneric(Type type, Field field) {
-        if (type instanceof ParameterizedType) {
-            ParameterizedType parameterizedType = (ParameterizedType) type;
+    public Object createGeneric(Type type) {
+        return createGeneric(type, null);
+    }
 
-            Class<?> rawType = (Class) parameterizedType.getRawType();
-            Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+    private Object createGeneric(Type type, Field field) {
+        ClassFactory fieldFactory = factoryRepository.getFactoryForField(field);
 
-            ClassFactory fieldFactory = factoryRepository.getFactoryForField(field);
-
-            if(fieldFactory != null) {
-                if(fieldFactory instanceof GenericClassFactory) {
-                    return ((GenericClassFactory)fieldFactory).create(rawType, actualTypeArguments);
-                } else {
-                    return fieldFactory.create(field);
-                }
-            }
-
-            GenericClassFactory factory = factoryRepository.getFactoryForGenericType(rawType, parameterizedType);
-
-            if (factory != null) {
-                return factory.create(rawType, actualTypeArguments);
-            } else {
-                return createInstance(rawType, Maps.newHashMap(), actualTypeArguments);
-            }
+        if(fieldFactory != null) {
+            return createTypeUsingFieldFactory(type, field, fieldFactory);
+        } else if (type instanceof ParameterizedType) {
+            return createGenericType(type);
+        } else if (ReflectionUtils.isArrayType(type)) {
+            return createArrayType(type);
         } else if (type instanceof Class) {
-            if(((Class)type).isArray()) {
-                GenericClassFactory classFactory = factoryRepository.getFactoryForGenericType((Class)type, ((Class)type).getComponentType());
-                return classFactory.create((Class)type, null);
-            } else {
-                return create((Class) type);
-            }
+            return create((Class) type);
         } else {
             throw new ClassInstantiationException("Unknown generic type: [" + type + "]");
         }
     }
 
-    public Object createGeneric(Type type) {
-        return createGeneric(type, null);
+    private Object createTypeUsingFieldFactory(Type type, Field field, ClassFactory fieldFactory) {
+        if (fieldFactory instanceof GenericClassFactory) {
+            Class rawType = getRawType(type);
+            Type[] actualTypeArguments = getActualTypeArgs(type);
+            return ((GenericClassFactory) fieldFactory).create(rawType, actualTypeArguments);
+        } else {
+            return fieldFactory.create(field);
+        }
     }
 
     private <T> T createInstance(Class<T> rawType, Map<String, Object> overrides, Type... actualTypeArguments) {
         try {
+            if (actualTypeArguments.length == 0 && ReflectionUtils.classIsGeneric(rawType)) {
+                actualTypeArguments = ReflectionUtils.getClassTypeArguments(rawType);
+            }
             Constructor<T> constructor = ReflectionUtils.getDefaultOrFirstConstructor(rawType);
             constructor.setAccessible(true);
 
@@ -190,17 +186,14 @@ public class FatBoy {
                     }
 
                     if (!(field.getGenericType() instanceof Class)) {
-                        Type resolvedType = resolveType(field, types, instance.getClass().getTypeParameters());
-                        field.set(instance, createGeneric(resolvedType, field));
-                        return;
-                    }
-
-                    ClassFactory<T> factory = factoryRepository.<T>getFactoryForField(field);
-
-                    if (factory == null) {
-                        field.set(instance, create(field.getType()));
+                        if (ReflectionUtils.typeIsFullyResolved(field)) {
+                            field.set(instance, createGeneric(field.getGenericType(), field));
+                        } else {
+                            Type resolvedType = resolveType(field, types, field.getDeclaringClass().getTypeParameters());
+                            field.set(instance, createGeneric(resolvedType, field));
+                        }
                     } else {
-                        field.set(instance, factory.create(field));
+                        field.set(instance, createGeneric(field.getType(), field));
                     }
                 }));
 
@@ -215,9 +208,26 @@ public class FatBoy {
         return typeResolver.resolveType(field.getGenericType());
     }
 
-    @FunctionalInterface
-    public static interface FatBoyProvidedFactory<T> {
-        T create(FatBoy fatBoy);
+    private Object createArrayType(Type type) {
+        Class rawType = getRawType(type);
+        Type[] actualType = getActualTypeArgs(type);
+        return factoryRepository.getFactoryForGenericType(rawType, type).create(rawType, actualType);
     }
 
+    private Object createGenericType(Type type) {
+        Class rawType = getRawType(type);
+        Type[] actualTypeArguments = getActualTypeArgs(type);
+        GenericClassFactory factory = factoryRepository.getFactoryForGenericType(rawType, type);
+
+        if (factory != null) {
+            return factory.create(rawType, actualTypeArguments);
+        } else {
+            return createInstance(rawType, Maps.newHashMap(), actualTypeArguments);
+        }
+    }
+
+    @FunctionalInterface
+    public interface FatBoyProvidedFactory<T> {
+        T create(FatBoy fatBoy);
+    }
 }

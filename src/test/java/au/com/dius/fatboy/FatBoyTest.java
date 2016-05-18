@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.IsNot.not;
+import static org.junit.Assert.fail;
 
 @RunWith(BlockJUnit4ClassRunner.class)
 public class FatBoyTest {
@@ -88,7 +89,7 @@ public class FatBoyTest {
 
     @Test(expected = ClassInstantiationException.class)
     public void failsWhenNonGenericListsAreAttemptedToBeCreated() {
-        fatBoy.create(ListClass.class);
+        fatBoy.create(List.class);
     }
 
     @Test
@@ -190,25 +191,6 @@ public class FatBoyTest {
         assertThat(create.reference, is(uuid));
     }
 
-    @Test
-    public void customClassProvidersCanBePluggedIn() {
-        PrimitiveClass expected = new PrimitiveClass();
-
-        PrimitiveClass primitiveClass = fatBoy.registerClassFactory(new PrimitiveProvider(expected)).create(PrimitiveClass.class);
-
-        assertThat(primitiveClass, is(expected));
-    }
-
-    @Test
-    public void customGenericClassFactoriesCanBePluggedIn() {
-        List<String> expected = Lists.newArrayList("foosauce");
-
-        GenericListClass genericListClass = fatBoy.registerGenericFactory(List.class, (a, b) -> expected)
-                .create(GenericListClass.class);
-
-        assertThat(genericListClass.strings, is(expected));
-    }
-
     @Test(expected = IllegalArgumentException.class)
     public void explodesWhenRegisteringGenericClassFactoryForNonGenericClass() {
         fatBoy.registerGenericFactory(PrimitiveClass.class, (a, b) -> null);
@@ -221,26 +203,23 @@ public class FatBoyTest {
 
     @Test
     public void shouldApplyGenericFieldProviders() throws Exception {
+        HashMap expected = new HashMap();
         HarderGenericClassContainer genericClassContainer = fatBoy
-                .registerGenericFactory(MultiLevelGenericallyTypedClass.class.getDeclaredField("genericType"), (raw, actual) -> {
-                    HashMap hashMap = new HashMap();
-                    hashMap.put(fatBoy.createGeneric(actual[0]), fatBoy.createGeneric(actual[1]));
-                    return hashMap;
-                })
+                .registerGenericFactory(MultiLevelGenericallyTypedClass.class.getDeclaredField("genericType"), (raw, actual) -> expected)
                 .create(HarderGenericClassContainer.class);
 
-        assertThat(genericClassContainer.field.genericType, is(notNullValue()));
+        assertThat(genericClassContainer.field.genericType, sameInstance(expected));
     }
 
     @Test
-    public void shouldMagicGenericClasses() {
+    public void shouldCreateMultilevelGenericClasses() {
         HarderGenericClassContainer genericClassContainer = fatBoy.create(HarderGenericClassContainer.class);
 
         assertThat(genericClassContainer.field.genericType, is(notNullValue()));
     }
 
     @Test
-    public void shouldInstantiateClassWithTypeVariables() {
+    public void shouldCreateClassWithTypeVariables() {
         GenericClassContainer genericClassContainer = fatBoy.create(GenericClassContainer.class);
 
         assertThat(genericClassContainer.field.genericType, is(notNullValue()));
@@ -258,29 +237,45 @@ public class FatBoyTest {
         assertThat(primitiveClass.four, is("helllo"));
     }
 
+    @Test(expected = RuntimeException.class)
+    public void shouldAllowExceptionsToBubbleUp() {
+        new FatBoy()
+                .registerFieldFactory(GenericArrayClassInner.class, "genericArray", () -> { throw new RuntimeException("Somethng bad happened"); })
+                .create(DoubleGenericClass.class);
+    }
+
     @Test
     public void shouldPopulateArrayTypes() {
-        ArrayClass arrays = new FatBoy().create(ArrayClass.class);
+        PrimitiveArrayClass arrays = new FatBoy().create(PrimitiveArrayClass.class);
 
-        assertThat(arrays.strings.length, greaterThan(0));
+        assertThat(arrays.primitiveClasses.length, is(4));
     }
 
-    @Test(expected = RuntimeException.class)
-    public void shouldProvideReasonableErrorMessges() {
-        new FatBoy()
-                .registerFieldFactory(ErrorMessageClassInner.class, "foo", () -> { throw new RuntimeException("Somethng bad happened"); })
-                .create(ErrorMessageClass.class);
+
+    @Test
+    public void shouldPopulateGenericArrays() {
+        GenericArrayClass actual = new FatBoy().create(GenericArrayClass.class);
+
+        assertThat(actual.primitiveClass.genericArray.length, greaterThan(0));
+    }
+
+
+    @Test
+    public void shouldCreateClassesThatExtendGenericParentClasses() {
+        PrimitiveArrayClassExtender actual = new FatBoy().create(PrimitiveArrayClassExtender.class);
+
+        assertThat(actual.genericArray.length, greaterThan(0));
+        assertThat(actual.genericArray[0].size(), greaterThan(0));
+        assertThat(actual.map.size(), greaterThan(0));
     }
 
     @Test
-    public void shouldUseClassFactoriesInGenericTypes() {
-        PrimitiveClass expected = new PrimitiveClass();
+    public void shouldCreateClassesThatExtendAnyNumberOfGenericParentClasses() {
+        OuterDoubleGenericClass actual = new FatBoy().create(OuterDoubleGenericClass.class);
 
-        CompositeClass actual = new FatBoy()
-                .registerFieldFactory(CompositeClass.class, "primitives", () -> Lists.newArrayList(expected))
-                .create(CompositeClass.class);
-
-        assertThat(actual.primitives.get(0), sameInstance(expected));
+        assertThat(actual.genericArray.length, greaterThan(0));
+        assertThat(actual.someT, notNullValue());
+        assertThat(actual.someString, notNullValue());
     }
 
     private static class PrimitiveClass {
@@ -332,24 +327,6 @@ public class FatBoyTest {
         }
     }
 
-    private static class PrimitiveProvider extends AbstractClassFactory<PrimitiveClass> {
-        PrimitiveClass toBeReturned;
-
-        PrimitiveProvider(PrimitiveClass toBeReturned) {
-            this.toBeReturned = toBeReturned;
-        }
-
-        @Override
-        public boolean supports(Class clazz) {
-            return clazz == PrimitiveClass.class;
-        }
-
-        @Override
-        public PrimitiveClass create(Field field) {
-            return toBeReturned;
-        }
-    }
-
     private static class GenericallyTypedClass<T> {
         public T genericType;
     }
@@ -378,17 +355,33 @@ public class FatBoyTest {
         private String[] strings;
     }
 
+    private static class OuterDoubleGenericClass extends DoubleGenericClass<String> {
+        public GenericArrayClassInner<String> someString;
+    }
+
+    private static class DoubleGenericClass<T> extends GenericArrayClassInner<T> {
+        public T someT;
+    }
+
+    private static class PrimitiveArrayClassExtender extends GenericArrayClassInner<List<String>> {
+    }
+
+    private static class PrimitiveArrayClass {
+        public PrimitiveClass[] primitiveClasses;
+    }
+
+    private static class GenericArrayClass {
+        public GenericArrayClassInner<PrimitiveClass> primitiveClass;
+    }
+
+    private static class GenericArrayClassInner<T> {
+        public T[] genericArray;
+        public List<Map<T[], T>> map;
+    }
+
     private <K, V> Map<K, V> map(K key, V value) {
         return new HashMap<K, V>() {{
             put(key, value);
         }};
-    }
-
-    private static class ErrorMessageClassInner {
-        private String foo;
-    }
-
-    private static class ErrorMessageClass {
-        private List<ErrorMessageClassInner> inner;
     }
 }

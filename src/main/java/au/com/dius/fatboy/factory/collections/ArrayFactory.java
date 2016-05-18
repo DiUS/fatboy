@@ -4,9 +4,7 @@ import au.com.dius.fatboy.FatBoy;
 import au.com.dius.fatboy.factory.config.FieldLength;
 import au.com.dius.fatboy.factory.impl.AbstractGenericClassFactory;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 
 public class ArrayFactory extends AbstractGenericClassFactory<Object> {
 
@@ -25,18 +23,28 @@ public class ArrayFactory extends AbstractGenericClassFactory<Object> {
     @Override
     public Object create(Class rawType, Type[] actualTypeArguments) {
         int length = getHint(FieldLength.class).getLength();
-
-        Object o = Array.newInstance(rawType, length);
+        Object array = Array.newInstance(rawType.getComponentType(), length);
+        Type typeToCreate = getTypeToCreate(rawType, actualTypeArguments);
 
         for (int x = 0; x < length; x++) {
-            ((Object[]) o)[x] = fatBoy.createGeneric(rawType);
+            ((Object[]) array)[x] = fatBoy.createGeneric(typeToCreate);
         }
 
-        return o;
+        return array;
+    }
+
+    private Type getTypeToCreate(Class rawType, Type[] actualTypeArguments) {
+        if (actualTypeArguments != null && actualTypeArguments[0] instanceof ParameterizedType) {
+            return actualTypeArguments[0];
+        } else if (actualTypeArguments != null && actualTypeArguments[0] instanceof GenericArrayType){
+            return ((GenericArrayType)actualTypeArguments[0]).getGenericComponentType();
+        } else {
+            return rawType.getComponentType();
+        }
     }
 
     @Override
     public Object create(Field field) {
-        return create((Class) field.getType().getComponentType(), null);
+        return create((Class) field.getType(), null);
     }
 }
