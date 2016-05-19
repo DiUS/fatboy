@@ -19,11 +19,11 @@ public class SimpleClassFactory<T> extends AbstractGenericClassFactory<T> {
     }
 
     @Override
-    public T create(Field field) {
+    public T create(Field field, Class<?> clazz) {
         if (field != null) {
             return create(field.getType(), new Type[]{field.getGenericType()});
         } else {
-            return create(null, null);
+            return create(clazz, null);
         }
     }
 

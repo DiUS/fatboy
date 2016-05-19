@@ -12,7 +12,7 @@ public class IntFactory extends AbstractClassFactory<Integer> {
     }
 
     @Override
-    public Integer create(Field field) {
+    public Integer create(Field field, Class<?> clazz) {
         return getHint(FieldLength.class).getLength();
     }
 }

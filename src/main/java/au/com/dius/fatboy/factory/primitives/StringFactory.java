@@ -16,7 +16,7 @@ public class StringFactory extends AbstractSemanticFactory<String> {
     }
 
     @Override
-    public String create(Field field) {
+    public String create(Field field, Class<?> clazz) {
         int fieldLength = getHint(FieldLength.class).getLength();
         return super.create(field, () -> FatBoy.FAKER.letterify(repeat("?", fieldLength)));
     }

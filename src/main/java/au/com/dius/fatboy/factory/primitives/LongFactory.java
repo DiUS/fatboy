@@ -12,7 +12,7 @@ public class LongFactory extends AbstractClassFactory<Long> {
     }
 
     @Override
-    public Long create(Field field) {
+    public Long create(Field field, Class<?> clazz) {
         return getHint(FieldLength.class).getLongLength();
     }
 

@@ -12,7 +12,7 @@ public class DateTimeFactory extends AbstractClassFactory<DateTime> {
     }
 
     @Override
-    public DateTime create(Field field) {
+    public DateTime create(Field field, Class<?> clazz) {
         return new DateTime();
     }
 

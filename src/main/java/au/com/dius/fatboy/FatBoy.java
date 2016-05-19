@@ -103,8 +103,12 @@ public class FatBoy {
     public <T> T create(Class<T> clazz, Map<String, Object> overrides) {
         ClassFactory<T> factory = factoryRepository.getFactoryForClass(clazz);
 
+        if(clazz.isEnum()) {
+
+        }
+
         if (factory != null) {
-            return factory.create(null);
+            return factory.create(null, clazz);
         }
 
         if (clazz.isPrimitive()) {
@@ -152,7 +156,7 @@ public class FatBoy {
             Type[] actualTypeArguments = getActualTypeArgs(type);
             return ((GenericClassFactory) fieldFactory).create(rawType, actualTypeArguments);
         } else {
-            return fieldFactory.create(field);
+            return fieldFactory.create(field, field.getType());
         }
     }
 

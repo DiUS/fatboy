@@ -13,7 +13,7 @@ public class BooleanFactory extends AbstractClassFactory<Boolean> {
     }
 
     @Override
-    public Boolean create(Field field) {
+    public Boolean create(Field field, Class<?> clazz) {
         return RandomUtils.random(true, false);
     }
 

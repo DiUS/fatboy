@@ -1,6 +1,5 @@
 package au.com.dius.fatboy.factory.noop;
 
-import au.com.dius.fatboy.factory.impl.AbstractClassFactory;
 import au.com.dius.fatboy.factory.impl.AbstractGenericClassFactory;
 import com.google.common.collect.Lists;
 
@@ -37,7 +36,7 @@ public class NullFactory extends AbstractGenericClassFactory<Object> {
     }
 
     @Override
-    public Object create(Field field) {
+    public Object create(Field field, Class<?> clazz) {
         return null;
     }
 }

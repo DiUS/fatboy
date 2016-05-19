@@ -13,7 +13,7 @@ public class EnumFactory extends AbstractClassFactory {
     }
 
     @Override
-    public Object create(Field field) {
-        return RandomUtils.random(field.getType().getEnumConstants());
+    public Object create(Field field, Class clazz) {
+        return RandomUtils.random(clazz.getEnumConstants());
     }
 }

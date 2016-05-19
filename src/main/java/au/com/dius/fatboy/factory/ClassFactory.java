@@ -24,9 +24,10 @@ public interface ClassFactory<T> {
 
     /**
      * @param field The field to create an instance of
+     * @param clazz the class of the object to be created. For use when field is unknown and object is part of an inheritance tree
      * @return A new object of class type {@code T} that this class is a factory for
      */
-    T create(Field field);
+    T create(Field field, Class<?> clazz);
 
     /**
      * @param hint a new FactoryHint. If any FactoryHint with the same class exists, it should be replaced by this one.

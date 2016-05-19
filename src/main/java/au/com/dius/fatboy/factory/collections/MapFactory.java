@@ -29,7 +29,7 @@ public class MapFactory extends AbstractGenericClassFactory<Map> {
     }
 
     @Override
-    public Map create(Field field) {
+    public Map create(Field field, Class<?> clazz) {
         Type genericType = field.getGenericType();
         ParameterizedType impl = (ParameterizedType) genericType;
         return create(field.getType(), impl.getActualTypeArguments());

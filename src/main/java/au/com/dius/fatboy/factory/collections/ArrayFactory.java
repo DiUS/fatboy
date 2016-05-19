@@ -44,7 +44,7 @@ public class ArrayFactory extends AbstractGenericClassFactory<Object> {
     }
 
     @Override
-    public Object create(Field field) {
+    public Object create(Field field, Class<?> clazz) {
         return create((Class) field.getType(), null);
     }
 }

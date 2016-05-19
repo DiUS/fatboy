@@ -32,7 +32,7 @@ public class SimpleGenericFieldFactory<T> extends AbstractGenericClassFactory<T>
     }
 
     @Override
-    public T create(Field field) {
+    public T create(Field field, Class<?> clazz) {
         return create(field.getType(), new Type[]{field.getGenericType()});
     }
 

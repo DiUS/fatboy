@@ -29,7 +29,7 @@ public class CollectionFactory extends AbstractGenericClassFactory<Collection> {
     }
 
     @Override
-    public Collection create(Field field) {
+    public Collection create(Field field, Class<?> clazz) {
         Type genericType = field.getGenericType();
         ParameterizedType impl = (ParameterizedType) genericType;
         return create(field.getType(), impl.getActualTypeArguments());

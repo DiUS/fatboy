@@ -12,7 +12,7 @@ public class UUIDFactory extends AbstractClassFactory<UUID> {
     }
 
     @Override
-    public UUID create(Field field) {
+    public UUID create(Field field, Class<?> clazz) {
         return UUID.randomUUID();
     }
 

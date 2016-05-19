@@ -278,6 +278,21 @@ public class FatBoyTest {
         assertThat(actual.someString, notNullValue());
     }
 
+    @Test
+    public void shouldCreateEnums() {
+        EnumType enumClass = fatBoy.create(EnumType.class);
+
+        assertThat(enumClass, is(notNullValue()));
+    }
+
+    private static enum EnumType {
+        FOO, BAR
+    }
+
+    private static class EnumClass {
+        public EnumType field;
+    }
+
     private static class PrimitiveClass {
         int one;
         long two;

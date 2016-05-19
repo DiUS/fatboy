@@ -24,7 +24,7 @@ public class SimpleFieldFactory<T> extends AbstractClassFactory<T> {
     }
 
     @Override
-    public T create(Field field) {
+    public T create(Field field, Class<?> clazz) {
         return factory.get();
     }
 }
