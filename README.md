@@ -51,11 +51,11 @@ Configurer.configure()
 * ```dateTimeStrings``` matches String fields containing the word 'datetime'
 	* Matches  'someDateTime',  doesn't match 'somedatefoo'
 * ```dateStrings``` matches String fields containing the word 'date' (with no 'time' after it)
-	* Matches 'somedatefoo', does not  match 'someDateSomeTime'
+	* Matches 'someDateFoo', does not  match 'someDateable' or 'someDateTime'
 * ```timeStrings``` matches String fields containing the word 'time' (with no 'date' prefix)
-	* Matches 'sometimefoo', does not match 'someDatesomeTimeFoo'
-* ```identifierStrings``` matches String fields with the name 'id'
-	* Matches 'id', does not match 'idiom'
+	* Matches 'someTimeFoo', does not match 'someDatesomeTimeFoo' or 'someTimes'
+* ```identifierStrings``` matches String fields ending with 'Id' or consisting of only the string 'id'
+	* Matches 'id' and 'customerId', does not match 'idiom' or 'customerIdiom'
 
 Calling ```Configurer.reset()``` will reset the defaults for any FatBoy instances created afterwards
 
