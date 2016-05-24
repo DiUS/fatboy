@@ -10,6 +10,7 @@ import au.com.dius.fatboy.factory.primitives.StringFactory;
 import au.com.dius.fatboy.factory.semantic.date.DateStringSemanticFieldFactory;
 import au.com.dius.fatboy.factory.semantic.date.DateTimeStringSemanticFieldFactory;
 import au.com.dius.fatboy.factory.semantic.date.TimeStringSemanticFieldFactory;
+import au.com.dius.fatboy.factory.semantic.geo.LatLongSemanticFieldFactory;
 import au.com.dius.fatboy.factory.semantic.id.IdentifierStringSemanticFieldFactory;
 import au.com.dius.fatboy.factory.semantic.name.NameStringSemanticFieldFactory;
 import com.google.common.collect.ArrayListMultimap;
@@ -89,6 +90,7 @@ public class Configurer {
         configuration.put(StringFactory.class, new TimeStringSemanticFieldFactory());
         configuration.put(StringFactory.class, new IdentifierStringSemanticFieldFactory());
         configuration.put(StringFactory.class, new NameStringSemanticFieldFactory());
+        configuration.put(StringFactory.class, new LatLongSemanticFieldFactory());
         configuration.put(IntFactory.class, FieldLength.random(0, 100000));
         configuration.put(LongFactory.class, FieldLength.random(0, 1000000));
 
