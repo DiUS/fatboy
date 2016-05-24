@@ -19,6 +19,7 @@ public class DateTimeStringSemanticFieldFactoryTest {
 
         assertThat(factory.supports(field("date")), is(false));
         assertThat(factory.supports(field("dateTime")), is(true));
+        assertThat(factory.supports(field("datetime")), is(true));
         assertThat(factory.supports(field("someDate")), is(false));
         assertThat(factory.supports(field("somedateTime")), is(false));
         assertThat(factory.supports(field("someDateTime")), is(true));
@@ -34,6 +35,7 @@ public class DateTimeStringSemanticFieldFactoryTest {
     private static class FieldMatcherTest {
         private String date;
         private String dateTime;
+        private String datetime;
         private String someDate;
         private String somedateTime;
         private String someDateTime;

@@ -49,7 +49,7 @@ Configurer.configure()
 ```
 
 * ```dateTimeStrings``` matches String fields containing the word 'datetime'
-	* Matches  'someDateTime',  doesn't match 'somedatefoo'
+	* Matches  'someDateTime' and 'datetime',  doesn't match someDateFoo' or 'someDateTimestrings'
 * ```dateStrings``` matches String fields containing the word 'date' (with no 'time' after it)
 	* Matches 'someDateFoo', does not  match 'someDateable' or 'someDateTime'
 * ```timeStrings``` matches String fields containing the word 'time' (with no 'date' prefix)

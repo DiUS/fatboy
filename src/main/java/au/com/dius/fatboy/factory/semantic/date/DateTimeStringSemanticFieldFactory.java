@@ -15,6 +15,7 @@ public class DateTimeStringSemanticFieldFactory extends SemanticFieldFactoryHint
     public DateTimeStringSemanticFieldFactory(DateTimeFormatter dateTimeFormatter) {
         super(String.class);
         addFieldMatcher(Pattern.compile("^dateTime$"), () -> dateTimeFormatter.print(new DateTime()));
+        addFieldMatcher(Pattern.compile("^datetime$"), () -> dateTimeFormatter.print(new DateTime()));
         addFieldMatcher(Pattern.compile("^.*DateTime(\\p{Upper}.*|$)"), () -> dateTimeFormatter.print(new DateTime()));
     }
 }
