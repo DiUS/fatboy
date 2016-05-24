@@ -18,6 +18,8 @@ public class IdentifierStringSemanticFieldFactoryTest {
         IdentifierStringSemanticFieldFactory factory = new IdentifierStringSemanticFieldFactory();
 
         assertThat(factory.supports(field("id")), is(true));
+        assertThat(factory.supports(field("customerId")), is(true));
+        assertThat(factory.supports(field("customerIdentifier")), is(false));
         assertThat(factory.supports(field("dateid")), is(false));
         assertThat(factory.supports(field("idiot")), is(false));
     }
@@ -30,5 +32,7 @@ public class IdentifierStringSemanticFieldFactoryTest {
         private String id;
         private String dateid;
         private String idiot;
+        private String customerId;
+        private String customerIdentifier;
     }
 }

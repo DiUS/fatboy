@@ -15,5 +15,6 @@ public class IdentifierStringSemanticFieldFactory extends SemanticFieldFactoryHi
     public IdentifierStringSemanticFieldFactory(FieldLength fieldLength) {
         super(String.class);
         addFieldMatcher(Pattern.compile("^id$"), () -> FatBoy.FAKER.numerify(StringUtils.repeat("#", fieldLength.getLength())));
+        addFieldMatcher(Pattern.compile("^.*\\p{Lower}Id$"), () -> FatBoy.FAKER.numerify(StringUtils.repeat("#", fieldLength.getLength())));
     }
 }
