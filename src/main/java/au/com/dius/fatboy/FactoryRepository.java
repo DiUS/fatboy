@@ -33,6 +33,7 @@ class FactoryRepository {
         factories.add(new IntFactory());
         factories.add(new BooleanFactory());
         factories.add(new LongFactory());
+        factories.add(new UrlFactory());
 
         factories.add(new EnumFactory());
 

@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 
 import java.lang.reflect.Field;
+import java.net.URL;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -78,6 +79,7 @@ public class FatBoyTest {
         assertThat(result.two, not(0));
         assertThat(result.three, notNullValue());
         assertThat(result.four, notNullValue());
+        assertThat(result.five, notNullValue());
     }
 
     @Test
@@ -110,6 +112,7 @@ public class FatBoyTest {
         assertThat(result.primitives.get(0).one, not(0));
         assertThat(result.primitives.get(0).three, not(0));
         assertThat(result.primitives.get(0).four.length(), greaterThan(0));
+        assertThat(result.primitives.get(0).five, notNullValue());
     }
 
     @Test
@@ -298,6 +301,7 @@ public class FatBoyTest {
         long two;
         boolean three;
         String four;
+        URL five;
     }
 
     private static class GenericListClass {
